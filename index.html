@@ -84,22 +84,19 @@
     const userInput = document.getElementById('userInput');
     const chatBox = document.getElementById('chatBox');
 
-    // Add a function to display messages in the chat box
     function displayMessage(message, sender) {
         const messageElement = document.createElement('div');
         messageElement.classList.add('message', sender === 'user' ? 'user-message' : 'bot-message');
         messageElement.innerText = message;
         chatBox.appendChild(messageElement);
-        chatBox.scrollTop = chatBox.scrollHeight; // Scroll to the bottom
+        chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    // Function to handle sending messages and receiving responses
     async function sendMessageToAPI(userMessage) {
-        // Display the user's message
         displayMessage(userMessage, 'user');
 
         try {
-            const response = await fetch('YOUR_BACKEND_API_URL', {
+            const response = await fetch('https://your-backend-api.com/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -107,26 +104,22 @@
                 body: JSON.stringify({ message: userMessage })
             });
             const data = await response.json();
-            const botMessage = data.reply; // Assume API returns a "reply" field
-
-            // Display the bot's response
+            const botMessage = data.reply;
             displayMessage(botMessage, 'bot');
         } catch (error) {
-            console.error('Error communicating with chatbot API:', error);
-            displayMessage("Sorry, I couldn't process your request. Please try again later.", 'bot');
+            console.error('Error:', error);
+            displayMessage('Sorry, I could not process your request.', 'bot');
         }
     }
 
-    // Handle the "Send" button click
     sendButton.addEventListener('click', () => {
         const userMessage = userInput.value.trim();
         if (userMessage) {
             sendMessageToAPI(userMessage);
-            userInput.value = ''; // Clear the input box
+            userInput.value = '';
         }
     });
 
-    // Optionally, handle pressing "Enter" to send the message
     userInput.addEventListener('keypress', (event) => {
         if (event.key === 'Enter') {
             sendButton.click();
