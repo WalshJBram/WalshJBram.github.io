@@ -3,6 +3,13 @@ import requests
 import os
 from dotenv import load_dotenv
 
+from flask_cors import CORS
+
+app = Flask(__name__)
+CORS(app)  # Allow requests from different origins
+
+
+
 # Load environment variables from .env file
 load_dotenv()
 
