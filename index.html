@@ -3,58 +3,135 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatbot Interface</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Student Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .chat-container {
+            width: 100%;
+            max-width: 500px;
+            height: 600px;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 10px;
+        }
+        .chat-box {
+            flex: 1;
+            overflow-y: scroll;
+            padding: 10px;
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .input-box {
+            display: flex;
+        }
+        .input-box input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        .input-box button {
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .input-box button:hover {
+            background-color: #0056b3;
+        }
+        .message {
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+        .user-message {
+            background-color: #e0f7fa;
+            align-self: flex-end;
+        }
+        .bot-message {
+            background-color: #f1f1f1;
+        }
+    </style>
 </head>
 <body>
 
 <div class="chat-container">
-    <div class="chat-box" id="chat-box">
-        <!-- Messages will appear here -->
-    </div>
-    <div class="input-container">
-        <input type="text" id="user-input" placeholder="Type a message...">
-        <button id="send-button">Send</button>
+    <div class="chat-box" id="chatBox"></div>
+    <div class="input-box">
+        <input type="text" id="userInput" placeholder="Type your message..." />
+        <button id="sendButton">Send</button>
     </div>
 </div>
 
 <script>
-    document.getElementById("send-button").addEventListener("click", sendMessage);
+    const sendButton = document.getElementById('sendButton');
+    const userInput = document.getElementById('userInput');
+    const chatBox = document.getElementById('chatBox');
 
-    function sendMessage() {
-        let userInput = document.getElementById("user-input").value;
-        if (userInput.trim() !== "") {
-            // Display user message
-            displayMessage(userInput, 'user');
-            
-            // Send message to back-end (chatbot) and get response
-            fetch('http://localhost:5000/chat', {
+    // Add a function to display messages in the chat box
+    function displayMessage(message, sender) {
+        const messageElement = document.createElement('div');
+        messageElement.classList.add('message', sender === 'user' ? 'user-message' : 'bot-message');
+        messageElement.innerText = message;
+        chatBox.appendChild(messageElement);
+        chatBox.scrollTop = chatBox.scrollHeight; // Scroll to the bottom
+    }
+
+    // Function to handle sending messages and receiving responses
+    async function sendMessageToAPI(userMessage) {
+        // Display the user's message
+        displayMessage(userMessage, 'user');
+
+        try {
+            const response = await fetch('YOUR_BACKEND_API_URL', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ message: userInput })
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Display bot message
-                displayMessage(data.response, 'bot');
-            })
-            .catch(error => console.error('Error:', error));
+                body: JSON.stringify({ message: userMessage })
+            });
+            const data = await response.json();
+            const botMessage = data.reply; // Assume API returns a "reply" field
 
-            // Clear input field
-            document.getElementById("user-input").value = '';
+            // Display the bot's response
+            displayMessage(botMessage, 'bot');
+        } catch (error) {
+            console.error('Error communicating with chatbot API:', error);
+            displayMessage("Sorry, I couldn't process your request. Please try again later.", 'bot');
         }
     }
 
-    function displayMessage(message, sender) {
-        const chatBox = document.getElementById("chat-box");
-        const messageDiv = document.createElement("div");
-        messageDiv.classList.add(sender === 'user' ? 'user-message' : 'bot-message');
-        messageDiv.textContent = message;
-        chatBox.appendChild(messageDiv);
-        chatBox.scrollTop = chatBox.scrollHeight;  // Auto-scroll to the bottom
-    }
+    // Handle the "Send" button click
+    sendButton.addEventListener('click', () => {
+        const userMessage = userInput.value.trim();
+        if (userMessage) {
+            sendMessageToAPI(userMessage);
+            userInput.value = ''; // Clear the input box
+        }
+    });
+
+    // Optionally, handle pressing "Enter" to send the message
+    userInput.addEventListener('keypress', (event) => {
+        if (event.key === 'Enter') {
+            sendButton.click();
+        }
+    });
 </script>
 
 </body>
